@@ -48,18 +48,18 @@ module HuboardWeb
     if ENV["SELF_HOST_FAYE"] && ENV['SOCKET_BACKEND'] == '/site/pubsub'
       #config.middleware.delete Rack::Lock
       Faye.logger = Logger.new(STDOUT)
-      config.middleware.use Faye::RackAdapter, 
-        mount: (ENV['SOCKET_BACKEND']), 
+      config.middleware.use Faye::RackAdapter,
+        mount: (ENV['SOCKET_BACKEND']),
         timeout: 25,
         ping: 20,
         extensions: [PrivatePub::FayeExtension.new],
         engine: {
           type: Faye::Redis,
-          uri: (ENV['REDIS_URL'] || 'redis://localhost:6379')
+          uri: (ENV['REDIS_URL'] || 'redis://redis:6379')
         }
     elsif !ENV['SELF_HOST_FAYE'] && ENV['HUBOARD_ENV'] == "production"
-      config.middleware.use Faye::RackAdapter, 
-        mount:"/site/pubsub", 
+      config.middleware.use Faye::RackAdapter,
+        mount:"/site/pubsub",
         timeout: 25,
         ping: 20,
         extensions: [FayeExtensions::Disconnect.new]
@@ -76,11 +76,11 @@ module HuboardWeb
     else
       config.active_job.queue_adapter = :sucker_punch
     end
-    
+
     config.middleware.use Rack::Attack
     config.middleware.use PDFKit::Middleware, {print_media_type: true}, only: %r[^/settings]
-    
-    # !!! This addresses a Rails Behaviour that coaxes empty arrays in the params hash into nils 
+
+    # !!! This addresses a Rails Behaviour that coaxes empty arrays in the params hash into nils
     # see https://github.com/rails/rails/pull/13188
     # Ricki Mar 17 2015
     config.action_dispatch.perform_deep_munge = false
